@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_todo_app/todo.dart';
 
@@ -10,17 +11,29 @@ void main() {
   runApp(const ProviderScope(child: MainApp()));
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends HookWidget {
   const MainApp({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final scrollController = useScrollController();
+
+    scrollController.addListener(() {
+      if (scrollController.position.atEdge) {
+        if (scrollController.position.pixels == 0)
+          print('Scrolled to top');
+        else
+          print('Scrolled to bottom');
+      }
+    });
+
     return MaterialApp(
       home: Scaffold(
         body: Consumer(
           builder: (context, ref, child) {
             final todos = ref.watch(todoListProvider);
             return ListView(
+              controller: scrollController,
               children: [
                 for (final todo in todos)
                   Container(
