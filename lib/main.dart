@@ -11,11 +11,11 @@ void main() {
   runApp(const ProviderScope(child: MainApp()));
 }
 
-class MainApp extends HookWidget {
+class MainApp extends HookConsumerWidget {
   const MainApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final scrollController = useScrollController();
 
     scrollController.addListener(() {
@@ -51,8 +51,17 @@ class MainApp extends HookWidget {
           return FloatingActionButton(
             key: const Key('increment_floatingActionButton'),
             // The read method is a utility to read a provider without listening to it
-            onPressed: () =>
-                ref.read(todoListProvider.notifier).add('Learn Riverpod'),
+            onPressed: () {
+              ref.read(todoListProvider.notifier).add('Learn Riverpod');
+              Future.delayed(
+                const Duration(milliseconds: 100),
+                () => scrollController.animateTo(
+                  scrollController.position.maxScrollExtent,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOutExpo,
+                ),
+              );
+            },
             tooltip: 'Increment',
             child: const Icon(Icons.add),
           );
