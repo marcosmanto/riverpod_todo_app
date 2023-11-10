@@ -53,13 +53,10 @@ class MainApp extends HookConsumerWidget {
             // The read method is a utility to read a provider without listening to it
             onPressed: () {
               ref.read(todoListProvider.notifier).add('Learn Riverpod');
-              Future.delayed(
-                const Duration(milliseconds: 100),
-                () => scrollController.animateTo(
-                  scrollController.position.maxScrollExtent,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOutExpo,
-                ),
+              scrollController.animateTo(
+                scrollController.position.maxScrollExtent + 300,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutExpo,
               );
             },
             tooltip: 'Increment',
