@@ -87,41 +87,49 @@ class Home extends HookConsumerWidget {
       }
     });
 
-    return Scaffold(
-      body: Consumer(
-        builder: (context, ref, child) {
-          final todos = ref.watch(todoListProvider);
-          return ListView(
-            controller: scrollController,
-            children: [
-              for (final todo in todos)
-                Container(
-                  alignment: Alignment.center,
-                  color: Color.fromRGBO(Random().nextInt(256),
-                      Random().nextInt(256), Random().nextInt(256), 1),
-                  height: 250,
-                  child: Text(todo.description),
-                )
-            ],
-          );
-        },
+    final todos = ref.watch(filteredTodos);
+    final newTodoController = useTextEditingController();
+
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        body: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+          children: [
+            const Title(),
+            TextField(
+              key: addTodoKey,
+              controller: newTodoController,
+              decoration:
+                  const InputDecoration(labelText: 'What needs to be done?'),
+              onSubmitted: (value) {
+                ref.read(todoListProvider.notifier).add(value);
+                newTodoController.clear();
+              },
+            )
+          ],
+        ),
       ),
-      floatingActionButton: Consumer(builder: (context, ref, _) {
-        return FloatingActionButton(
-          key: const Key('increment_floatingActionButton'),
-          // The read method is a utility to read a provider without listening to it
-          onPressed: () {
-            ref.read(todoListProvider.notifier).add('Learn Riverpod');
-            scrollController.animateTo(
-              scrollController.position.maxScrollExtent + 300,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutExpo,
-            );
-          },
-          tooltip: 'Increment',
-          child: const Icon(Icons.add),
-        );
-      }),
+    );
+  }
+}
+
+class Title extends StatelessWidget {
+  const Title({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return const Text(
+      'todos',
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        color: Color.fromARGB(38, 47, 47, 247),
+        fontSize: 100,
+        fontWeight: FontWeight.w100,
+        fontFamily: 'Helvetica Neue',
+      ),
     );
   }
 }
