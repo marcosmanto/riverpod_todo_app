@@ -116,7 +116,10 @@ class Home extends HookConsumerWidget {
                 onDismissed: (_) {
                   ref.read(todoListProvider.notifier).remove(todos[i]);
                 },
-                child: TodoItem(todos[i]),
+                child: ProviderScope(
+                  overrides: [_currentTodo.overrideWithValue(todos[i])],
+                  child: const TodoItem(),
+                ),
               )
             ]
           ],
@@ -146,13 +149,21 @@ class Title extends StatelessWidget {
   }
 }
 
-class TodoItem extends HookConsumerWidget {
-  const TodoItem(this.todo, {super.key});
+/// A provider which exposes the [Todo] displayed by a [TodoItem].
+///
+/// By retrieving the [Todo] through a provider instead of through its
+/// constructor, this allows [TodoItem] to be instantiated using the `const` keyword.
+///
+/// This ensures that when we add/remove/edit todos, only what the
+/// impacted widgets rebuilds, instead of the entire list of items.
+final _currentTodo = Provider<Todo>((ref) => throw UnimplementedError());
 
-  final Todo todo;
+class TodoItem extends HookConsumerWidget {
+  const TodoItem({super.key});
 
   @override
   Widget build(Object context, WidgetRef ref) {
+    final todo = ref.watch(_currentTodo);
     final itemFocusNode = useFocusNode();
     final itemIsFocused = useIsFocused(itemFocusNode);
 
