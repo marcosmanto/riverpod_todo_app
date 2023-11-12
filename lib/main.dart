@@ -106,7 +106,13 @@ class Home extends HookConsumerWidget {
                 ref.read(todoListProvider.notifier).add(value);
                 newTodoController.clear();
               },
-            )
+            ),
+            const SizedBox(height: 42),
+            if (todos.isNotEmpty) const Divider(height: 0),
+            for (var i = 0; i < todos.length; i++) ...[
+              if (i > 0) const Divider(height: 0),
+              Text(todos[i].description)
+            ]
           ],
         ),
       ),
