@@ -111,7 +111,13 @@ class Home extends HookConsumerWidget {
             if (todos.isNotEmpty) const Divider(height: 0),
             for (var i = 0; i < todos.length; i++) ...[
               if (i > 0) const Divider(height: 0),
-              Text(todos[i].description)
+              Dismissible(
+                key: ValueKey(todos[i].id),
+                onDismissed: (_) {
+                  ref.read(todoListProvider.notifier).remove(todos[i]);
+                },
+                child: TodoItem(todos[i]),
+              )
             ]
           ],
         ),
@@ -138,4 +144,72 @@ class Title extends StatelessWidget {
       ),
     );
   }
+}
+
+class TodoItem extends HookConsumerWidget {
+  const TodoItem(this.todo, {super.key});
+
+  final Todo todo;
+
+  @override
+  Widget build(Object context, WidgetRef ref) {
+    final itemFocusNode = useFocusNode();
+    final itemIsFocused = useIsFocused(itemFocusNode);
+
+    final textEditingController = useTextEditingController();
+    final textFieldFocusNode = useFocusNode();
+
+    return Material(
+      color: Colors.white,
+      elevation: 6,
+      child: Focus(
+        focusNode: itemFocusNode,
+        onFocusChange: (focused) {
+          if (focused) {
+            textEditingController.text = todo.description;
+          } else {
+            ref
+                .read(todoListProvider.notifier)
+                .edit(id: todo.id, description: textEditingController.text);
+          }
+        },
+        child: ListTile(
+          onTap: () {
+            itemFocusNode.requestFocus();
+            textFieldFocusNode.requestFocus();
+          },
+          leading: Checkbox(
+            value: todo.completed,
+            onChanged: (value) =>
+                ref.read(todoListProvider.notifier).toggle(todo.id),
+          ),
+          title: itemIsFocused
+              ? TextField(
+                  autofocus: true,
+                  focusNode: textFieldFocusNode,
+                  controller: textEditingController,
+                )
+              : Text(todo.description),
+        ),
+      ),
+    );
+  }
+}
+
+bool useIsFocused(FocusNode node) {
+  final isFocused = useState(node.hasFocus);
+
+  useEffect(
+    () {
+      void listener() {
+        isFocused.value = node.hasFocus;
+      }
+
+      node.addListener(listener);
+      return () => node.removeListener(listener);
+    },
+    [node],
+  );
+
+  return isFocused.value;
 }
